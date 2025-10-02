@@ -3,78 +3,68 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WebXR Per‑Eye Stimulus (Amblyopia Dichoptic Demo)</title>
+  <title>WebXR Dichoptic – Shiny Helix (Objects Only)</title>
   <style>
-    html, body { margin: 0; height: 100%; background:#000; color:#ddd; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-    #ui { position: fixed; left: 12px; top: 12px; background: rgba(0,0,0,0.55); padding: 10px 12px; border-radius: 12px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.08); max-width: 600px; z-index: 1000; max-height: 84vh; overflow: auto; }
-    #ui label { display: block; font-size: 13px; margin: 6px 0 2px; }
-    #ui input[type="color"] { width: 48px; height: 28px; border: none; background: none; }
-    #ui .row { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
-    #help { font-size: 12px; line-height: 1.35; opacity: .9; margin-top: 6px; }
-    button, select, input { font: inherit; }
-    #enter { margin-top: 8px; }
-    #testStatus { font-size: 12px; margin-top: 6px; opacity: .9; max-height: 160px; overflow:auto; }
+    html, body { margin:0; height:100%; background:#000; color:#ddd; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    #ui { position: fixed; left: 12px; top: 12px; background: rgba(0,0,0,0.55); padding: 10px 12px; border-radius: 12px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.08); max-width: 650px; z-index: 1000; max-height: 86vh; overflow: auto; }
+    #ui label { display:block; font-size:13px; margin:6px 0 2px; }
+    #ui .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .section { border-top: 1px dashed rgba(255,255,255,0.15); margin-top:8px; padding-top:8px; }
-    #diag { font-size: 12px; color: #ffd18a; margin-top: 6px; white-space: pre-line; }
-    .preset-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px; }
-    .presets details{ border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:6px 8px; }
-    .presets summary{ cursor:pointer; user-select:none; }
-    .hidden{ display:none !important; }
+    .hidden { display:none !important; }
     .tag { font-size: 11px; padding: 2px 6px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; opacity:.9 }
-    /* Ensure the native VRButton is always visible on headsets */
-    .webxr-button, .vr-button, .xr-button {
-      position: fixed !important; right: 12px !important; bottom: 12px !important;
-      z-index: 2000 !important; opacity: 1 !important; display: block !important;
-    }
-    @media (max-height: 500px) { #ui { max-width: calc(100% - 24px); right: 12px; } }
+    #diag { font-size:12px; color:#ffd18a; white-space:pre-line; margin-top:6px; }
+    #testStatus{ font-size:12px; margin-top:6px; max-height:140px; overflow:auto; }
+    .webxr-button, .vr-button, .xr-button { position: fixed !important; right: 12px !important; bottom: 12px !important; z-index: 2000 !important; opacity: 1 !important; display: block !important; }
   </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
   <div id="ui">
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <strong>양안 분리 데모</strong>
+    <div class="row" style="justify-content:space-between; align-items:center">
+      <strong>양안 분리 – 샤이니 헬릭스</strong>
       <span id="ambTag" class="tag">약시안: <strong>오른쪽</strong></span>
     </div>
 
     <div class="row">
-      <label>자극 모드</label>
-      <select id="stimMode">
-        <option value="objects" selected>Objects (헬릭스/큐브/스피어/링)</option>
-        <option value="rdk">RDK (무작위 점 동작)</option>
-      </select>
       <button id="toggleAmb">약시안 좌/우 전환</button>
+      <button id="enter">VR 시작</button>
+      <button id="recenter">재배치</button>
+      <button id="runTests">자가 테스트</button>
     </div>
 
     <label>배경 패턴</label>
     <div class="row">
       <select id="bgMode">
-        <option value="sine" selected>사인 웨이브</option>
+        <option value="sine" selected>사인</option>
         <option value="checker">체커</option>
         <option value="spiral">스파이럴</option>
       </select>
-      <label style="margin-left:8px">배경 색1</label>
-      <input id="bgColor1" type="color" value="#ffee66"/>
+      <label style="margin-left:8px">색1</label>
+      <input id="bgColor1" type="color" value="#101010"/>
       <label>색2</label>
-      <input id="bgColor2" type="color" value="#00d084"/>
+      <input id="bgColor2" type="color" value="#1b1b1b"/>
     </div>
 
     <div id="objectsPanel">
-      <label>왼쪽 눈 색/형태</label>
+      <div class="row"><strong>왼/오 눈 형태·색</strong></div>
       <div class="row">
+        <label>왼쪽</label>
         <input id="leftColor" type="color" value="#ff4da6" />
-        <label style="margin-left:8px">형태</label>
         <select id="leftShape">
           <option value="helix" selected>헬릭스</option>
           <option value="cube">큐브</option>
           <option value="sphere">스피어</option>
           <option value="ring">링</option>
         </select>
-      </div>
-
-      <label>오른쪽 눈 색/형태</label>
-      <div class="row">
+        <label style="margin-left:8px">오른쪽</label>
         <input id="rightColor" type="color" value="#3ddcff" />
-        <label style="margin-left:8px">형태</label>
         <select id="rightShape">
           <option value="helix" selected>헬릭스</option>
           <option value="cube">큐브</option>
@@ -82,19 +72,18 @@
           <option value="ring">링</option>
         </select>
       </div>
-
-      <label>헬릭스 두께 (반경, m)</label>
+      <label>헬릭스 두께 (tube r, m)</label>
       <div class="row">
         <input id="helixThickness" type="range" min="0.01" max="0.20" step="0.005" value="0.035"/>
         <span id="helixThicknessVal">0.035</span>
       </div>
     </div>
 
-    <label>공통(양눈 모두) 자극</label>
+    <label>공통(양눈) 자극</label>
     <div class="row">
-      <input id="bothColor" type="color" value="#ffffff" />
+      <input id="bothColor" type="color" value="#888888" />
       <select id="bothShape">
-        <option value="grid">그리드(중앙 십자 융합 큐)</option>
+        <option value="grid" selected>그리드(중앙 십자)</option>
         <option value="floor">바닥 플레인</option>
         <option value="none">없음</option>
       </select>
@@ -102,25 +91,50 @@
       <label style="margin-left:8px"><input type="checkbox" id="fusionToggle" checked> 중앙 십자 표시</label>
     </div>
 
-    <label>도미넌트 눈 대비 감소(훈련용)</label>
-    <input id="rightContrast" type="range" min="0" max="100" value="50" />
+    <div class="section">
+      <div class="row"><strong>선명도(HD/SD) & 샤이니(메탈) — 약시안만</strong></div>
+      <div class="row">
+        <label>약시안 선명도</label>
+        <input id="ambSharp" type="range" min="0" max="1" step="0.05" value="0.8">
+        <span id="ambSharpVal">0.80</span>
+        <label style="margin-left:8px">우세안 SD 강도</label>
+        <input id="domSD" type="range" min="0" max="1" step="0.05" value="0.6">
+        <span id="domSDVal">0.60</span>
+      </div>
+      <div class="row">
+        <label><input id="shinyAmb" type="checkbox" checked> 약시안 샤이니(메탈 하이라이트)</label>
+        <label style="margin-left:8px">metalness</label>
+        <input id="shinyMetal" type="range" min="0" max="1" step="0.01" value="1.0"><span id="shinyMetalVal">1.00</span>
+        <label>roughness</label>
+        <input id="shinyRough" type="range" min="0" max="1" step="0.01" value="0.08"><span id="shinyRoughVal">0.08</span>
+        <label>clearcoat</label>
+        <input id="shinyCoat" type="range" min="0" max="1" step="0.01" value="0.9"><span id="shinyCoatVal">0.90</span>
+        <label>env</label>
+        <input id="shinyEnv" type="range" min="0" max="5" step="0.1" value="2.5"><span id="shinyEnvVal">2.5</span>
+        <label>emissive</label>
+        <input id="shinyEmi" type="range" min="0" max="0.6" step="0.02" value="0.12"><span id="shinyEmiVal">0.12</span>
+      </div>
+      <div class="row">
+        <label>렌더 스케일</label>
+        <input id="renderScale" type="range" min="1" max="2" step="0.05" value="1.6"><span id="renderScaleVal">1.60×</span>
+        <label style="margin-left:8px"><input id="ambSparkle" type="checkbox" checked> 약시안 헬릭스 반짝임</label>
+      </div>
+    </div>
 
     <div class="section">
       <div class="row"><strong>템포랄 모듈레이션(깜빡임)</strong></div>
       <div class="row">
         <label><input type="checkbox" id="modL"> 왼눈 적용</label>
         <label><input type="checkbox" id="modR" checked> 오른눈 적용</label>
-      </div>
-      <div class="row">
         <label>모드</label>
         <select id="modMode">
-          <option value="blink">온/오프 깜빡임</option>
+          <option value="blink">온/오프</option>
           <option value="pulse" selected>명암+대비+색 펄스</option>
         </select>
-        <label style="margin-left:8px">주파수(Hz)</label>
+        <label>주파수(Hz)</label>
         <input id="modFreq" type="range" min="0" max="15" step="0.1" value="2">
         <span id="modFreqVal">2.0 Hz</span>
-        <label style="margin-left:8px">듀티(%)</label>
+        <label>듀티(%)</label>
         <input id="modDuty" type="range" min="5" max="95" step="1" value="50">
         <span id="modDutyVal">50%</span>
       </div>
@@ -128,10 +142,8 @@
         <label>펄스 강도</label>
         <input id="pulseStrength" type="range" min="0.5" max="2.0" step="0.05" value="1.3">
         <span id="pulseStrengthVal">1.30×</span>
-      </div>
-      <div class="row">
-        <label><input type="checkbox" id="phaseLink"> 위상 모드(좌↔우 연동)</label>
-        <label style="margin-left:8px">위상 오프셋(°)</label>
+        <label style="margin-left:8px"><input type="checkbox" id="phaseLink"> 위상 모드(좌↔우 연동)</label>
+        <label>오프셋(°)</label>
         <input id="phaseOffset" type="range" min="0" max="180" step="1" value="0" disabled>
         <span id="phaseOffsetVal">0°</span>
       </div>
@@ -145,308 +157,225 @@
       </div>
     </div>
 
-    <div id="rdkPanel" class="section hidden">
-      <div class="row"><strong>RDK(무작위 점 동작) 설정</strong></div>
-      <div class="row">
-        <label>코히어런스(%)</label>
-        <input id="rdkCoherence" type="range" min="0" max="100" step="1" value="50"><span id="rdkCoherenceVal">50%</span>
-        <label style="margin-left:8px">밀도(점 수)</label>
-        <input id="rdkDots" type="range" min="100" max="1500" step="50" value="800"><span id="rdkDotsVal">800</span>
-      </div>
-      <div class="row">
-        <label>속도(m/s)</label>
-        <input id="rdkSpeed" type="range" min="0.1" max="3.0" step="0.05" value="1.0"><span id="rdkSpeedVal">1.00</span>
-        <label style="margin-left:8px">크기(m)</label>
-        <input id="rdkSize" type="range" min="0.005" max="0.040" step="0.001" value="0.020"><span id="rdkSizeVal">0.020</span>
-        <label style="margin-left:8px">수명(s)</label>
-        <input id="rdkLife" type="range" min="0.10" max="1.00" step="0.05" value="0.30"><span id="rdkLifeVal">0.30</span>
-      </div>
-      <div class="row">
-        <label>방향</label>
-        <select id="rdkDir">
-          <option value="random" selected>무작위(시도마다)</option>
-          <option value="left">←</option>
-          <option value="right">→</option>
-          <option value="up">↑</option>
-          <option value="down">↓</option>
-        </select>
-        <label style="margin-left:8px">힌트</label>
-        <select id="rdkHint">
-          <option value="none" selected>없음</option>
-          <option value="color">색</option>
-          <option value="size">크기</option>
-          <option value="blink">깜빡임(6Hz)</option>
-        </select>
-        <label style="margin-left:8px">노이즈</label>
-        <select id="rdkNoise">
-          <option value="randwalk" selected>랜덤-워크</option>
-          <option value="randdir">랜덤-디렉션</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="section presets">
-      <details open>
-        <summary><strong>프로토콜 프리셋(10)</strong> — 접어서 공간 확보하기</summary>
-        <div class="preset-grid">
-          <button class="preset" data-id="1">L Blink 2Hz 50% (180°)</button>
-          <button class="preset" data-id="2">L Blink 4Hz 40% (180°)</button>
-          <button class="preset" data-id="3">L Pulse 3Hz (180°)</button>
-          <button class="preset" data-id="4">L Pulse 6Hz (180°)</button>
-          <button class="preset" data-id="5">R Blink 2Hz 50% (180°)</button>
-          <button class="preset" data-id="6">R Blink 4Hz 40% (180°)</button>
-          <button class="preset" data-id="7">R Pulse 3Hz (180°)</button>
-          <button class="preset" data-id="8">R Pulse 6Hz (180°)</button>
-          <button class="preset" data-id="9">L Pulse 10Hz (90°)</button>
-          <button class="preset" data-id="10">R Pulse 1Hz (0°)</button>
-        </div>
-      </details>
-    </div>
-
-    <div class="row section" style="gap:6px">
-      <button id="enter">VR 시작</button>
-      <button id="recenter">재배치</button>
-      <button id="runTests" title="내장 자가 테스트를 실행합니다">자가 테스트</button>
-    </div>
-    <div id="help">Tip: 약시안 전환 버튼으로 **오른↔왼**을 즉시 바꿀 수 있습니다. RDK 모드에서는 코히어런스/밀도/속도 등으로 난이도를 조절하세요.</div>
-    <div id="diag"></div>
     <div id="testStatus"></div>
+    <div id="diag"></div>
   </div>
 
   <script type="module">
-    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-    import { VRButton } from 'https://unpkg.com/three@0.160.0/examples/jsm/webxr/VRButton.js';
+    import * as THREE from 'three';
+    import { VRButton } from 'three/addons/webxr/VRButton.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     const diag = document.getElementById('diag');
-    function d(msg){ diag.textContent += (diag.textContent? '\n' : '') + msg; console.log('[DIAG]', msg); }
+    function d(msg){ diag.textContent += (diag.textContent?'\n':'')+msg; console.log('[DIAG]', msg); }
 
-    // --- renderer & scene ---
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Renderer / Scene
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.xr.enabled = true; // WebXR on
-    document.body.appendChild(renderer.domElement);
+    renderer.xr.enabled = true; document.body.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 50);
-    camera.position.set(0, 1.4, 1.5);
-    camera.layers.enable(0); camera.layers.enable(1); camera.layers.enable(2);
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 50);
+    camera.position.set(0,1.4,1.5); camera.layers.enable(0); camera.layers.enable(1); camera.layers.enable(2);
 
-    // Lights
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x222233, 0.9); scene.add(hemi);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.6); dir.position.set(2, 2, 1); scene.add(dir);
+    // Lighting & Environment (for shiny metal look even in dark)
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const env = pmrem.fromScene(new RoomEnvironment(renderer), 0.1).texture;
+    scene.environment = env; // reflections
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x111122, 0.7); scene.add(hemi);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.35); dir.position.set(2,2,1); scene.add(dir);
 
-    // === Animated Background with selectable patterns ===
-    const bgGeom = new THREE.PlaneGeometry(20, 12, 1, 1);
+    // Background
+    const bgGeom = new THREE.PlaneGeometry(20, 12);
     const bgMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uColor1: { value: new THREE.Color('#ffee66') },
-        uColor2: { value: new THREE.Color('#00d084') },
-        uMode: { value: 0 } // 0=sine, 1=checker, 2=spiral
-      },
-      vertexShader: /* glsl */`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-      fragmentShader: /* glsl */`
-        uniform float uTime; uniform vec3 uColor1; uniform vec3 uColor2; uniform int uMode; varying vec2 vUv;
-        float checker(vec2 p){ vec2 c = floor(p); return mod(c.x + c.y, 2.0); }
-        void main(){ vec2 uv=vUv; float m=0.0; if(uMode==0){ float w1=0.5+0.5*sin((uv.y*7.0+uTime*0.6)+0.35*sin(uv.x*9.0+uTime*0.9)); float w2=0.5+0.5*sin((uv.x*5.0-uTime*0.7)+0.20*sin(uv.y*11.0-uTime*0.5)); m=clamp(0.35+0.65*(0.6*w1+0.4*w2),0.0,1.0);} else if(uMode==1){ vec2 p=uv*16.0+vec2(uTime*0.2,-uTime*0.15); m=checker(p);} else { vec2 p=(uv-0.5)*2.0; float r=length(p); float a=atan(p.y,p.x); m=0.5+0.5*sin(12.0*a+8.0*r-uTime*1.2);} vec3 col=mix(uColor1,uColor2,m); gl_FragColor=vec4(col,1.0);} 
-      `,
-      depthWrite: false
+      uniforms:{ uTime:{value:0}, uColor1:{value:new THREE.Color('#101010')}, uColor2:{value:new THREE.Color('#1b1b1b')}, uMode:{value:0} },
+      vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader:`uniform float uTime; uniform vec3 uColor1,uColor2; uniform int uMode; varying vec2 vUv; float checker(vec2 p){ vec2 c=floor(p); return mod(c.x+c.y,2.0);} void main(){ vec2 uv=vUv; float m=0.0; if(uMode==0){ float w1=0.5+0.5*sin((uv.y*7.0+uTime*0.4)+0.35*sin(uv.x*9.0+uTime*0.7)); float w2=0.5+0.5*sin((uv.x*5.0-uTime*0.5)+0.20*sin(uv.y*11.0-uTime*0.3)); m=clamp(0.35+0.65*(0.6*w1+0.4*w2),0.0,1.0);} else if(uMode==1){ vec2 p=uv*16.0+vec2(uTime*0.15,-uTime*0.12); m=checker(p);} else { vec2 p=(uv-0.5)*2.0; float r=length(p); float a=atan(p.y,p.x); m=0.5+0.5*sin(12.0*a+8.0*r-uTime*1.0);} vec3 col=mix(uColor1,uColor2,m); gl_FragColor=vec4(col,1.0);} `,
+      depthWrite:false
     });
-    const bg = new THREE.Mesh(bgGeom, bgMat); bg.position.set(0, 1.4, -3.0); bg.layers.set(0); scene.add(bg);
+    const bg = new THREE.Mesh(bgGeom, bgMat); bg.position.set(0,1.4,-3.0); bg.layers.set(0); scene.add(bg);
 
-    // Grid (both eyes)
+    // Grid / both-eye cue
     const grid = new THREE.GridHelper(8, 24, 0xffffff, 0x666666); grid.material.opacity=0.25; grid.material.transparent=true; grid.position.y=0; scene.add(grid);
 
     // Groups
-    const leftGroup = new THREE.Group();
-    const rightGroup = new THREE.Group();
-    const bothGroup = new THREE.Group();
-    const rdkGroup = new THREE.Group(); // contains RDK point clouds
-    scene.add(leftGroup, rightGroup, bothGroup, rdkGroup);
+    const leftGroup = new THREE.Group(); const rightGroup = new THREE.Group(); const bothGroup = new THREE.Group(); scene.add(leftGroup,rightGroup,bothGroup);
 
-    // ---- Helix helpers ----
+    // Helix geometry helper
     class HelixCurve extends THREE.Curve { constructor(radius=0.18, pitch=0.28, turns=3.2){ super(); this.r=radius; this.p=pitch; this.t=turns; } getPoint(t){ const ang=this.t*6.28318530718*t; return new THREE.Vector3(this.r*Math.cos(ang),(t-0.5)*this.p*this.t,this.r*Math.sin(ang)); } }
-    let helixRadius = 0.035; // tube radius (thickness)
-    function makeHelix(color){ const curve=new HelixCurve(0.18,0.28,3.2); const geo=new THREE.TubeGeometry(curve,240,helixRadius,24,false); const mat=new THREE.MeshStandardMaterial({ color, roughness:0.35, metalness:0.15, transparent:true, opacity:1.0 }); return new THREE.Mesh(geo, mat); }
+    let tubeRadius = 0.035;
 
-    function makeMesh(shape, color) {
-      if (shape === 'helix') return makeHelix(color);
-      const mat = new THREE.MeshStandardMaterial({ color, metalness: 0.1, roughness: 0.4, transparent: true, opacity: 1.0 });
-      let geo; if (shape==='cube') geo=new THREE.BoxGeometry(0.35,0.35,0.35); else if (shape==='sphere') geo=new THREE.SphereGeometry(0.26,32,24); else if (shape==='ring') geo=new THREE.TorusGeometry(0.30,0.08,20,120); else geo=new THREE.BoxGeometry(0.3,0.3,0.3); return new THREE.Mesh(geo, mat);
+    // Material factory
+    function makeMaterial(color, shiny=false){
+      const c = new THREE.Color(color);
+      if(shiny){
+        const m = new THREE.MeshPhysicalMaterial({ color:c, metalness:1.0, roughness:0.08, clearcoat:0.9, clearcoatRoughness:0.15, envMapIntensity:2.5, emissive:c.clone().multiplyScalar(0.12) });
+        return m;
+      }
+      return new THREE.MeshStandardMaterial({ color:c, metalness:0.15, roughness:0.4, transparent:true, opacity:1.0 });
     }
 
-    let leftMesh = makeMesh('helix', 0xff4da6);
-    let rightMesh = makeMesh('helix', 0x3ddcff);
+    function makeMesh(shape, color, shiny=false){
+      if(shape==='helix'){
+        const curve=new HelixCurve(0.18,0.28,3.2);
+        const geo=new THREE.TubeGeometry(curve, 240, tubeRadius, 32, false);
+        const mat=makeMaterial(color, shiny);
+        return new THREE.Mesh(geo, mat);
+      }
+      const mat=makeMaterial(color, shiny);
+      let geo; if(shape==='cube') geo=new THREE.BoxGeometry(0.35,0.35,0.35); else if(shape==='sphere') geo=new THREE.SphereGeometry(0.26,32,24); else if(shape==='ring') geo=new THREE.TorusGeometry(0.30,0.08,20,120); else geo=new THREE.BoxGeometry(0.3,0.3,0.3);
+      return new THREE.Mesh(geo, mat);
+    }
+
+    // Initial meshes
+    let leftMesh = makeMesh('helix', 0xff4da6, false);
+    let rightMesh = makeMesh('helix', 0x3ddcff, true); // 약시안 기본=오른쪽이므로 샤이니 적용
     let bothMesh = null;
-    leftMesh.position.set(-0.42, 1.45, -1.25); rightMesh.position.set(0.42, 1.45, -1.25);
+    leftMesh.position.set(-0.42,1.45,-1.25); rightMesh.position.set(0.42,1.45,-1.25);
     leftMesh.layers.set(1); rightMesh.layers.set(2); leftGroup.add(leftMesh); rightGroup.add(rightMesh);
 
-    // helpers
-    function safeDispose(obj){ if(!obj) return; obj.traverse(c=>{ if(c.isMesh){ c.geometry?.dispose?.(); const m=c.material; if(Array.isArray(m)) m.forEach(x=>x?.dispose?.()); else m?.dispose?.(); } }); }
+    // Sparkle (amb eye only)
+    let sparkle=null;
+    function buildSparkleFor(mesh, color){
+      if(sparkle){ (sparkle.parent?.remove?.(sparkle)); sparkle.geometry?.dispose?.(); sparkle.material?.dispose?.(); sparkle=null; }
+      const N=800; const g=new THREE.BufferGeometry(); const pos=new Float32Array(N*3); const ph=new Float32Array(N);
+      for(let i=0;i<N;i++){ const a=Math.random()*Math.PI*2*3.2; const r=0.18+(Math.random()*0.05); const x=r*Math.cos(a); const z=r*Math.sin(a); const y=(Math.random()-0.5)*0.28*3.2; pos[i*3]=mesh.position.x + x + (Math.random()-0.5)*0.03; pos[i*3+1]=1.45+y + (Math.random()-0.5)*0.03; pos[i*3+2]=-1.25+z + (Math.random()-0.5)*0.03; ph[i]=Math.random()*Math.PI*2; }
+      g.setAttribute('position', new THREE.BufferAttribute(pos,3)); g.setAttribute('phase', new THREE.BufferAttribute(ph,1));
+      const m=new THREE.ShaderMaterial({
+        uniforms:{ uColor:{value:new THREE.Color(color)} },
+        vertexShader:`attribute float phase; varying float vP; void main(){ vP=phase; gl_PointSize=1.6 + 1.6*abs(sin(phase)); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+        fragmentShader:`uniform vec3 uColor; varying float vP; void main(){ float d=length(gl_PointCoord-vec2(0.5)); float halo=smoothstep(0.5,0.0,d); float tw=0.6 + 0.4*abs(sin(vP)); gl_FragColor=vec4(uColor, halo*tw); }`,
+        transparent:true, depthWrite:false, blending:THREE.AdditiveBlending
+      });
+      sparkle=new THREE.Points(g,m);
+      sparkle.layers.set(mesh.layers.mask===2?2:1);
+      (mesh.layers.mask===2? rightGroup : leftGroup).add(sparkle);
+    }
+
+    // Helpers
+    function safeDispose(obj){ if(!obj) return; obj.traverse?.(c=>{ if(c.isMesh){ c.geometry?.dispose?.(); const m=c.material; if(Array.isArray(m)) m.forEach(x=>x?.dispose?.()); else m?.dispose?.(); } }); }
     function setGroupColor(obj,color){ if(!obj) return; const col=new THREE.Color(color); obj.traverse(c=>{ if(c.isMesh){ if(Array.isArray(c.material)) c.material.forEach(m=>m?.color?.set(col)); else c.material?.color?.set(col);} }); }
     function setPerEyeLayers(){ const xrCam=renderer.xr.getCamera(camera); if(xrCam?.cameras?.length>=2){ const camL=xrCam.cameras[0], camR=xrCam.cameras[1]; camL.layers.enable(0); camL.layers.enable(1); camL.layers.disable(2); camR.layers.enable(0); camR.layers.enable(2); camR.layers.disable(1);} }
 
     // Both-eye cue
     function setBoth(shape, color){ if(bothMesh){ bothGroup.remove(bothMesh); safeDispose(bothMesh); bothMesh=null; } if(shape==='grid'){ const g=new THREE.Group(); const m=new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.6 }); const bar1=new THREE.Mesh(new THREE.PlaneGeometry(0.02,0.30), m.clone()); const bar2=new THREE.Mesh(new THREE.PlaneGeometry(0.30,0.02), m.clone()); bar1.position.set(0,1.5,-1.2); bar2.position.set(0,1.5,-1.2); g.add(bar1,bar2); bothMesh=g; } else if(shape==='floor'){ const plane=new THREE.Mesh(new THREE.PlaneGeometry(8,8), new THREE.MeshStandardMaterial({ color, metalness:0, roughness:1, transparent:true, opacity:1 })); plane.rotation.x=-Math.PI/2; plane.position.y=0.001; bothMesh=plane; } if(bothMesh) bothGroup.add(bothMesh); }
-    setBoth('grid', 0xffffff);
+    setBoth('grid', '#888888');
 
-    // UI refs
+    // === UI refs ===
     const leftColor=document.getElementById('leftColor'); const rightColor=document.getElementById('rightColor'); const bothColor=document.getElementById('bothColor');
     const leftShape=document.getElementById('leftShape'); const rightShape=document.getElementById('rightShape'); const bothShape=document.getElementById('bothShape');
-    const fusionToggle=document.getElementById('fusionToggle'); const rightContrast=document.getElementById('rightContrast'); const testStatus=document.getElementById('testStatus');
+    const fusionToggle=document.getElementById('fusionToggle'); const testStatus=document.getElementById('testStatus');
     const modL=document.getElementById('modL'); const modR=document.getElementById('modR'); const modMode=document.getElementById('modMode'); const modFreq=document.getElementById('modFreq'); const modFreqVal=document.getElementById('modFreqVal'); const modDuty=document.getElementById('modDuty'); const modDutyVal=document.getElementById('modDutyVal'); const pulseStrength=document.getElementById('pulseStrength'); const pulseStrengthVal=document.getElementById('pulseStrengthVal'); const phaseLink=document.getElementById('phaseLink'); const phaseOffset=document.getElementById('phaseOffset'); const phaseOffsetVal=document.getElementById('phaseOffsetVal'); const phaseL=document.getElementById('phaseL'); const phaseR=document.getElementById('phaseR'); const phaseLVal=document.getElementById('phaseLVal'); const phaseRVal=document.getElementById('phaseRVal');
-    const bgMode=document.getElementById('bgMode'); const bgColor1=document.getElementById('bgColor1'); const bgColor2=document.getElementById('bgColor2'); const helixThickness=document.getElementById('helixThickness'); const helixThicknessVal=document.getElementById('helixThicknessVal');
-    const stimMode=document.getElementById('stimMode'); const objectsPanel=document.getElementById('objectsPanel'); const rdkPanel=document.getElementById('rdkPanel');
+    const bgMode=document.getElementById('bgMode'); const bgColor1=document.getElementById('bgColor1'); const bgColor2=document.getElementById('bgColor2');
+    const helixThickness=document.getElementById('helixThickness'); const helixThicknessVal=document.getElementById('helixThicknessVal');
     const toggleAmb=document.getElementById('toggleAmb'); const ambTag=document.getElementById('ambTag');
+    const ambSharpEl=document.getElementById('ambSharp'); const ambSharpVal=document.getElementById('ambSharpVal');
+    const domSDEl=document.getElementById('domSD'); const domSDVal=document.getElementById('domSDVal');
+    const shinyAmb=document.getElementById('shinyAmb'); const shinyMetal=document.getElementById('shinyMetal'); const shinyMetalVal=document.getElementById('shinyMetalVal'); const shinyRough=document.getElementById('shinyRough'); const shinyRoughVal=document.getElementById('shinyRoughVal'); const shinyCoat=document.getElementById('shinyCoat'); const shinyCoatVal=document.getElementById('shinyCoatVal'); const shinyEnv=document.getElementById('shinyEnv'); const shinyEnvVal=document.getElementById('shinyEnvVal'); const shinyEmi=document.getElementById('shinyEmi'); const shinyEmiVal=document.getElementById('shinyEmiVal');
+    const renderScale=document.getElementById('renderScale'); const renderScaleVal=document.getElementById('renderScaleVal');
 
-    // RDK refs
-    const rdkCoherence=document.getElementById('rdkCoherence'); const rdkCoherenceVal=document.getElementById('rdkCoherenceVal');
-    const rdkDots=document.getElementById('rdkDots'); const rdkDotsVal=document.getElementById('rdkDotsVal');
-    const rdkSpeed=document.getElementById('rdkSpeed'); const rdkSpeedVal=document.getElementById('rdkSpeedVal');
-    const rdkSize=document.getElementById('rdkSize'); const rdkSizeVal=document.getElementById('rdkSizeVal');
-    const rdkLife=document.getElementById('rdkLife'); const rdkLifeVal=document.getElementById('rdkLifeVal');
-    const rdkDir=document.getElementById('rdkDir'); const rdkHint=document.getElementById('rdkHint'); const rdkNoise=document.getElementById('rdkNoise');
-
-    // Amb eye: default RIGHT (요청 반영)
-    let ambEye = 'R'; // 'L' or 'R'
+    // Amb eye side
+    let ambEye = 'R';
     function updateAmbTag(){ ambTag.innerHTML = `약시안: <strong>${ambEye==='R'?'오른쪽':'왼쪽'}</strong>`; }
     updateAmbTag();
 
-    toggleAmb.addEventListener('click', ()=>{ ambEye = (ambEye==='R'?'L':'R'); updateAmbTag(); configureRDKLayers(); });
+    // Shiny apply helper
+    function applyShinyTo(mesh, color, on){
+      const m = makeMaterial(color, on);
+      m.envMapIntensity = Number(shinyEnv.value);
+      if(m.isMeshPhysicalMaterial){ m.metalness = Number(shinyMetal.value); m.roughness = Number(shinyRough.value); m.clearcoat = Number(shinyCoat.value); m.emissive = new THREE.Color(color).multiplyScalar(Number(shinyEmi.value)); }
+      const old = mesh.material; mesh.material = m; if(old && old!==m){ if(Array.isArray(old)) old.forEach(x=>x?.dispose?.()); else old?.dispose?.(); }
+    }
 
-    // Presets handling
-    document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>applyPreset(Number(btn.dataset.id))));
+    function rebuildSide(which){
+      const isLeft = (which==='L'); const shapeSel=isLeft?leftShape:rightShape; const colInput=isLeft?leftColor:rightColor; const group=isLeft?leftGroup:rightGroup; let mesh=isLeft?leftMesh:rightMesh; const shiny = shinyAmb.checked && ((ambEye==='L' && isLeft) || (ambEye==='R' && !isLeft?false:true));
+      group.remove(mesh); safeDispose(mesh);
+      mesh = makeMesh(shapeSel.value, colInput.value, shiny && ((ambEye==='L' && isLeft) || (ambEye==='R' && !isLeft?false:true)));
+      mesh.position.copy(isLeft? new THREE.Vector3(-0.42,1.45,-1.25) : new THREE.Vector3(0.42,1.45,-1.25));
+      mesh.layers.set(isLeft?1:2); group.add(mesh);
+      if(isLeft) leftMesh=mesh; else rightMesh=mesh;
+      if(shinyAmb.checked){ // re-apply fine params
+        if((ambEye==='L' && isLeft) || (ambEye==='R' && !isLeft?false:true)) applyShinyTo(mesh, colInput.value, true);
+      }
+      // sparkle for amb eye helix only
+      if((ambEye==='L' && isLeft) || (ambEye==='R' && !isLeft?false:true)){
+        if(shapeSel.value==='helix' && document.getElementById('ambSparkle').checked) buildSparkleFor(mesh, colInput.value); else if(sparkle){ sparkle.parent?.remove?.(sparkle); sparkle.geometry?.dispose?.(); sparkle.material?.dispose?.(); sparkle=null; }
+      }
+    }
 
-    // BG controls
-    bgMode.addEventListener('change', ()=>{ bgMat.uniforms.uMode.value = (bgMode.value==='sine'?0:(bgMode.value==='checker'?1:2)); });
-    bgColor1.addEventListener('input', ()=>{ bgMat.uniforms.uColor1.value.set(bgColor1.value); });
-    bgColor2.addEventListener('input', ()=>{ bgMat.uniforms.uColor2.value.set(bgColor2.value); });
+    // Colors / shapes listeners
+    leftColor.addEventListener('input', ()=>{ if(leftMesh?.material) leftMesh.material.color.set(leftColor.value); if(ambEye==='L' && shinyAmb.checked) applyShinyTo(leftMesh,leftColor.value,true); if(sparkle && ambEye==='L') buildSparkleFor(leftMesh, leftColor.value); });
+    rightColor.addEventListener('input', ()=>{ if(rightMesh?.material) rightMesh.material.color.set(rightColor.value); if(ambEye==='R' && shinyAmb.checked) applyShinyTo(rightMesh,rightColor.value,true); if(sparkle && ambEye==='R') buildSparkleFor(rightMesh, rightColor.value); });
+    leftShape.addEventListener('change', ()=> rebuildSide('L'));
+    rightShape.addEventListener('change', ()=> rebuildSide('R'));
 
     // Helix thickness
     helixThickness.addEventListener('input', ()=>{ helixThicknessVal.textContent = Number(helixThickness.value).toFixed(3); });
-    helixThickness.addEventListener('change', ()=>{ helixRadius=Number(helixThickness.value); const rebuild=(side)=>{ if(side.shapeSel.value!=='helix') return; side.group.remove(side.mesh); safeDispose(side.mesh); const col=side.colorInput.value; const newMesh=makeHelix(col); newMesh.position.copy(side.pos); newMesh.layers.set(side.layer); side.group.add(newMesh); side.mesh=newMesh; }; rebuild({ shapeSel:leftShape, group:leftGroup, mesh:leftMesh, colorInput:leftColor, pos:new THREE.Vector3(-0.42,1.45,-1.25), layer:1 }); rebuild({ shapeSel:rightShape, group:rightGroup, mesh:rightMesh, colorInput:rightColor, pos:new THREE.Vector3(0.42,1.45,-1.25), layer:2 }); });
+    helixThickness.addEventListener('change', ()=>{ tubeRadius=Number(helixThickness.value); rebuildSide('L'); rebuildSide('R'); });
 
-    // color/shape
-    leftColor.addEventListener('input', ()=>{ leftMesh.material.color.set(leftColor.value); });
-    rightColor.addEventListener('input', ()=>{ rightMesh.material.color.set(rightColor.value); applyRightContrast(); });
+    // Both cue
     bothColor.addEventListener('input', ()=>{ if(bothMesh) setGroupColor(bothMesh, bothColor.value); });
-    leftShape.addEventListener('change', ()=>{ leftGroup.remove(leftMesh); safeDispose(leftMesh); leftMesh=makeMesh(leftShape.value,leftColor.value); leftMesh.position.set(-0.42,1.45,-1.25); leftMesh.layers.set(1); leftGroup.add(leftMesh); });
-    rightShape.addEventListener('change', ()=>{ rightGroup.remove(rightMesh); safeDispose(rightMesh); rightMesh=makeMesh(rightShape.value,rightColor.value); rightMesh.position.set(0.42,1.45,-1.25); rightMesh.layers.set(2); rightGroup.add(rightMesh); applyRightContrast(); });
-    bothShape.addEventListener('change', ()=>setBoth(bothShape.value, bothColor.value));
-    document.getElementById('clearBoth').addEventListener('click', ()=>{ setBoth('none'); bothShape.value='none'; fusionToggle.checked=false; });
+    bothShape.addEventListener('change', ()=> setBoth(bothShape.value, bothColor.value));
+    document.getElementById('clearBoth').addEventListener('click', ()=>{ setBoth('none'); bothShape.value='none'; document.getElementById('fusionToggle').checked=false; });
     fusionToggle.addEventListener('change', ()=>{ if (fusionToggle.checked){ setBoth('grid', bothColor.value); bothShape.value='grid'; } else { setBoth('none'); bothShape.value='none'; } });
 
-    // Dominant eye contrast (right eye)
-    function applyRightContrast(){ const v=rightContrast.value/100; const base=new THREE.Color(rightColor.value); const gray=new THREE.Color(0.5,0.5,0.5); const c=base.clone().lerp(gray, 1-v); rightMesh.material.color.copy(c); rightMesh.material.needsUpdate=true; }
-    rightContrast.addEventListener('input', applyRightContrast); applyRightContrast();
+    // BG controls
+    document.getElementById('bgMode').addEventListener('change', ()=>{ bgMat.uniforms.uMode.value = (bgMode.value==='sine'?0:(bgMode.value==='checker'?1:2)); });
+    document.getElementById('bgColor1').addEventListener('input', ()=>{ bgMat.uniforms.uColor1.value.set(bgColor1.value); });
+    document.getElementById('bgColor2').addEventListener('input', ()=>{ bgMat.uniforms.uColor2.value.set(bgColor2.value); });
+
+    // Render scale (for crisp highlights)
+    renderScale.addEventListener('input', ()=>{ const s=Number(renderScale.value); renderer.setPixelRatio(Math.min(2, s)); renderScaleVal.textContent = s.toFixed(2)+'×'; });
+
+    // Sharpness / SD
+    let ambSharp=Number(ambSharpEl.value), domSD=Number(domSDEl.value);
+    ambSharpEl.addEventListener('input', ()=>{ ambSharp=Number(ambSharpEl.value); ambSharpVal.textContent=ambSharp.toFixed(2); });
+    domSDEl.addEventListener('input', ()=>{ domSD=Number(domSDEl.value); domSDVal.textContent=domSD.toFixed(2); });
+
+    // Shiny params
+    function shinyReadouts(){ shinyMetalVal.textContent=Number(shinyMetal.value).toFixed(2); shinyRoughVal.textContent=Number(shinyRough.value).toFixed(2); shinyCoatVal.textContent=Number(shinyCoat.value).toFixed(2); shinyEnvVal.textContent=Number(shinyEnv.value).toFixed(1); shinyEmiVal.textContent=Number(shinyEmi.value).toFixed(2); }
+    ;[shinyMetal,shinyRough,shinyCoat,shinyEnv,shinyEmi].forEach(el=>el.addEventListener('input', ()=>{ shinyReadouts(); if(ambEye==='L') applyShinyTo(leftMesh,leftColor.value,shinyAmb.checked); else applyShinyTo(rightMesh,rightColor.value,shinyAmb.checked); }));
+    shinyAmb.addEventListener('change', ()=>{ rebuildSide('L'); rebuildSide('R'); });
+    shinyReadouts();
 
     // Temporal modulation
     function blinkValue(t,freq,duty,phaseDeg){ if(freq<=0) return 1; const phase=(phaseDeg||0)*Math.PI/180; const period=1/freq; const ph=((t+phase/(2*Math.PI*freq))%period+period)%period; return (ph<duty*period)?1:0; }
     function pulseValue(t,freq,phaseDeg){ if(freq<=0) return 1; const phase=(phaseDeg||0)*Math.PI/180; const v=0.5+0.5*Math.sin(2*Math.PI*freq*t+phase); return 0.2+0.8*v; }
-    function applyPulseContrastAndColor(mesh,v){ const s=Number(pulseStrength.value); mesh.visible=true; mesh.material.opacity=Math.min(1, 0.2+0.8*v*s*0.9); const base=new THREE.Color(mesh===leftMesh?leftColor.value:rightColor.value); const gray=new THREE.Color(0.45,0.45,0.45); const amount=(v-0.5)*2; if(amount>=0){ const boosted=base.clone(); const k=0.6*s; boosted.r=Math.min(1, Math.pow(base.r,0.8)+k*0.4); boosted.g=Math.min(1, Math.pow(base.g,0.8)+k*0.4); boosted.b=Math.min(1, Math.pow(base.b,0.8)+k*0.4); mesh.material.color.copy(base.clone().lerp(boosted, Math.min(1, amount*(0.7+0.3*s)))); } else { const att=Math.min(1, (-amount)*(0.6+0.4*s)); mesh.material.color.copy(base.clone().lerp(gray, att)); } mesh.material.needsUpdate=true; }
-    function applyTemporalToMesh(mesh, enabled, mode, t, phaseDeg){ if(!mesh) return; if(!enabled){ mesh.visible=true; mesh.material.opacity=1.0; mesh.material.color.set(mesh===leftMesh?leftColor.value:rightColor.value); return; } if(mode==='blink'){ const v=blinkValue(t, Number(modFreq.value), Number(modDuty.value)/100, phaseDeg); mesh.visible=(v>=0.5); } else { const v=pulseValue(t, Number(modFreq.value), phaseDeg); applyPulseContrastAndColor(mesh, v); } }
+    function applyPulse(mesh,v){ const s=Number(pulseStrength.value); mesh.visible=true; mesh.material.opacity=Math.min(1, 0.2+0.8*v*s*0.9); const base=new THREE.Color(mesh===leftMesh?leftColor.value:rightColor.value); const gray=new THREE.Color(0.45,0.45,0.45); const amount=(v-0.5)*2; if(amount>=0){ const boosted=base.clone(); const k=0.6*s; boosted.r=Math.min(1, Math.pow(base.r,0.8)+k*0.4); boosted.g=Math.min(1, Math.pow(base.g,0.8)+k*0.4); boosted.b=Math.min(1, Math.pow(base.b,0.8)+k*0.4); mesh.material.color.copy(base.clone().lerp(boosted, Math.min(1, amount*(0.7+0.3*s)))); } else { const att=Math.min(1, (-amount)*(0.6+0.4*s)); mesh.material.color.copy(base.clone().lerp(gray, att)); } mesh.material.needsUpdate=true; }
+    function applyTemporal(mesh, enabled, mode, t, phaseDeg){ if(!mesh) return; if(!enabled){ mesh.visible=true; mesh.material.opacity=1.0; mesh.material.color.set(mesh===leftMesh?leftColor.value:rightColor.value); return; } if(mode==='blink'){ const v=blinkValue(t, Number(modFreq.value), Number(modDuty.value)/100, phaseDeg); mesh.visible=(v>=0.5); } else { const v=pulseValue(t, Number(modFreq.value), phaseDeg); applyPulse(mesh, v); } }
 
-    // === RDK implementation ===
-    let rdk = { signal:null, noise:null, params:{ coherence:50, dots:800, speed:1.0, size:0.02, life:0.30, dir:'random', hint:'none', noise:'randwalk' }, arrays:null };
-
-    function dirToVec(dir){ switch(dir){ case 'left': return new THREE.Vector2(-1,0); case 'right': return new THREE.Vector2(1,0); case 'up': return new THREE.Vector2(0,1); case 'down': return new THREE.Vector2(0,-1); default: { const a=Math.random()*Math.PI*2; return new THREE.Vector2(Math.cos(a), Math.sin(a)); } } }
-
-    function createRDK(){ disposeRDK(); rdk.arrays = { posS:new Float32Array(rdk.params.dots*3), velS:new Float32Array(rdk.params.dots*2), ageS:new Float32Array(rdk.params.dots), posN:new Float32Array(rdk.params.dots*3), velN:new Float32Array(rdk.params.dots*2), ageN:new Float32Array(rdk.params.dots) };
-      const makePts=(count,color)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count*3),3)); const m=new THREE.PointsMaterial({ color, size: rdk.params.size, sizeAttenuation:true, transparent:true, opacity:1 }); return new THREE.Points(g,m); };
-      rdk.signal = makePts(rdk.params.dots, ambEye==='R'?0xff70b8:0x70d6ff); // hint 색(약)
-      rdk.noise  = makePts(rdk.params.dots, 0xffffff);
-      // layer routing: ambEye gets SIGNAL, fellow eye gets NOISE
-      rdk.signal.layers.set(ambEye==='R'?2:1); rdk.noise.layers.set(ambEye==='R'?1:2);
-      rdkGroup.add(rdk.signal); rdkGroup.add(rdk.noise);
-      // init positions ages & velocities
-      const init=(pos,vel,age,count,isSignal)=>{ for(let i=0;i<count;i++){ const x=(Math.random()-0.5)*2.0; const y=(Math.random()-0.1)*1.6; const z=-1.2 + (Math.random()-0.5)*0.1; pos[i*3]=x; pos[i*3+1]=1.4+y; pos[i*3+2]=z; const v = isSignal ? dirToVec(rdk.params.dir==='random'?'random':rdk.params.dir) : dirToVec('random'); vel[i*2]=v.x; vel[i*2+1]=v.y; age[i]=Math.random()*rdk.params.life; } };
-      init(rdk.arrays.posS,rdk.arrays.velS,rdk.arrays.ageS, rdk.params.dots, true);
-      init(rdk.arrays.posN,rdk.arrays.velN,rdk.arrays.ageN, rdk.params.dots, false);
-      rdk.signal.geometry.attributes.position.array.set(rdk.arrays.posS); rdk.signal.geometry.attributes.position.needsUpdate=true;
-      rdk.noise.geometry.attributes.position.array.set(rdk.arrays.posN); rdk.noise.geometry.attributes.position.needsUpdate=true;
-      configureRDKLayers();
+    // Dominant SD & Amb sharp effect
+    function applyPerEyeClarity(){
+      const domMesh = (ambEye==='R'? leftMesh : rightMesh);
+      if(domMesh && domMesh.material){ const baseCol = new THREE.Color(ambEye==='R'?leftColor.value:rightColor.value); const gray=new THREE.Color(0.5,0.5,0.5); const c = baseCol.clone().lerp(gray, domSD*0.8); domMesh.material.color.copy(c); domMesh.material.opacity = 1.0 - domSD*0.2; domMesh.material.needsUpdate=true; }
+      const ambMesh = (ambEye==='R'? rightMesh : leftMesh);
+      if(ambMesh && ambMesh.material){ const baseCol = new THREE.Color(ambEye==='R'?rightColor.value:leftColor.value); const boost = baseCol.clone(); boost.r=Math.min(1, Math.pow(boost.r, 0.85)); boost.g=Math.min(1, Math.pow(boost.g, 0.85)); boost.b=Math.min(1, Math.pow(boost.b, 0.85)); ambMesh.material.color.copy(baseCol.clone().lerp(boost, ambSharp*0.6)); ambMesh.material.needsUpdate=true; }
     }
 
-    function disposeRDK(){ if(rdk.signal){ rdkGroup.remove(rdk.signal); rdk.signal.geometry.dispose(); rdk.signal.material.dispose(); rdk.signal=null; } if(rdk.noise){ rdkGroup.remove(rdk.noise); rdk.noise.geometry.dispose(); rdk.noise.material.dispose(); rdk.noise=null; } }
-
-    function configureRDKLayers(){ if(!rdk.signal||!rdk.noise) return; rdk.signal.layers.set(ambEye==='R'?2:1); rdk.noise.layers.set(ambEye==='R'?1:2); }
-
-    function updateRDKParamsFromUI(){ rdk.params.coherence=Number(rdkCoherence.value); rdk.params.dots=Number(rdkDots.value); rdk.params.speed=Number(rdkSpeed.value); rdk.params.size=Number(rdkSize.value); rdk.params.life=Number(rdkLife.value); rdk.params.dir=rdkDir.value; rdk.params.hint=rdkHint.value; rdk.params.noise=rdkNoise.value; }
-
-    function ensureRDK(){ if(!rdk.signal||!rdk.noise) createRDK(); }
-
-    function stepRDK(dt){ if(!rdk.signal||!rdk.noise) return; const wrapX=1.0, wrapY=0.8; const speed=rdk.params.speed; const life=rdk.params.life; const hint=rdk.params.hint; const noiseMode=rdk.params.noise; const coh=rdk.params.coherence/100; const posS=rdk.arrays.posS, velS=rdk.arrays.velS, ageS=rdk.arrays.ageS; const posN=rdk.arrays.posN, velN=rdk.arrays.velN, ageN=rdk.arrays.ageN; const count=rdk.params.dots;
-      const setBlink = (pts, on)=>{ pts.material.opacity = on? 1.0 : 0.5; };
-      const blinkOn = (hint==='blink') ? (Math.sin(2*Math.PI*6*performance.now()/1000)>0) : true;
-      rdk.signal.material.size = rdk.params.size * (hint==='size'?1.4:1.0);
-      rdk.signal.material.color.set( (hint==='color') ? (ambEye==='R'?0xff70b8:0x70d6ff) : 0xffffff );
-      setBlink(rdk.signal, blinkOn);
-      // update function
-      const upd=(pos,vel,age,isSignal)=>{
-        for(let i=0;i<count;i++){
-          // velocity update
-          if(isSignal){
-            // coherence: 일부만 신호 방향, 나머지는 noise로 재샘플
-            if(Math.random()>coh){ const v=dirToVec('random'); vel[i*2]=v.x; vel[i*2+1]=v.y; }
-            else if(rdk.params.dir==='random' && age[i]===0){ const v=dirToVec('random'); vel[i*2]=v.x; vel[i*2+1]=v.y; }
-          } else {
-            if(noiseMode==='randdir'){ const v=dirToVec('random'); vel[i*2]=v.x; vel[i*2+1]=v.y; }
-            else { // randwalk: 조금씩 회전
-              const a=(Math.random()-0.5)*0.6; const vx=vel[i*2], vy=vel[i*2+1]; const ang=Math.atan2(vy,vx)+a*dt*3.0; const m=Math.hypot(vx,vy); vel[i*2]=Math.cos(ang)*(m||1); vel[i*2+1]=Math.sin(ang)*(m||1);
-            }
-          }
-          // integrate
-          pos[i*3]   += vel[i*2]   * speed * dt;
-          pos[i*3+1] += vel[i*2+1] * speed * dt;
-          // wrap around aperture (center 0,0 → world add 0,1.4,-1.2)
-          if(pos[i*3] < -wrapX) pos[i*3] += 2*wrapX; else if(pos[i*3] > wrapX) pos[i*3] -= 2*wrapX;
-          if(pos[i*3+1]-1.4 < -wrapY) pos[i*3+1] += 2*wrapY; else if(pos[i*3+1]-1.4 > wrapY) pos[i*3+1] -= 2*wrapY;
-          age[i]+=dt; if(age[i]>life){ // respawn
-            pos[i*3] = (Math.random()-0.5)*2.0; pos[i*3+1]=1.4 + (Math.random()-0.1)*1.6; pos[i*3+2] = -1.2 + (Math.random()-0.5)*0.1;
-            const v = isSignal ? dirToVec(rdk.params.dir==='random'?'random':rdk.params.dir) : dirToVec('random'); vel[i*2]=v.x; vel[i*2+1]=v.y; age[i]=0; }
-        }
-      };
-      upd(posS,velS,ageS,true); upd(posN,velN,ageN,false);
-      rdk.signal.geometry.attributes.position.array.set(posS); rdk.signal.geometry.attributes.position.needsUpdate=true;
-      rdk.noise.geometry.attributes.position.array.set(posN); rdk.noise.geometry.attributes.position.needsUpdate=true;
-    }
-
-    // Stimulus mode switching
-    function setStimMode(mode){ if(mode==='rdk'){ objectsPanel.classList.add('hidden'); rdkPanel.classList.remove('hidden'); leftGroup.visible=false; rightGroup.visible=false; ensureRDK(); rdkGroup.visible=true; } else { rdkPanel.classList.add('hidden'); objectsPanel.classList.remove('hidden'); rdkGroup.visible=false; leftGroup.visible=true; rightGroup.visible=true; } }
-    stimMode.addEventListener('change', ()=> setStimMode(stimMode.value));
-
-    // RDK UI bindings
-    function bindRdkReadouts(){ rdkCoherence.addEventListener('input',()=>{ rdkCoherenceVal.textContent = `${rdkCoherence.value}%`; }); rdkDots.addEventListener('input',()=>{ rdkDotsVal.textContent = rdkDots.value; }); rdkSpeed.addEventListener('input',()=>{ rdkSpeedVal.textContent = Number(rdkSpeed.value).toFixed(2); }); rdkSize.addEventListener('input',()=>{ rdkSizeVal.textContent = Number(rdkSize.value).toFixed(3); }); rdkLife.addEventListener('input',()=>{ rdkLifeVal.textContent = Number(rdkLife.value).toFixed(2); }); }
-    bindRdkReadouts();
-
-    [rdkCoherence, rdkDots, rdkSpeed, rdkSize, rdkLife, rdkDir, rdkHint, rdkNoise].forEach(el=>{
-      el.addEventListener('change', ()=>{ updateRDKParamsFromUI(); createRDK(); });
-    });
+    // Amb toggle
+    function updateAmbAssets(){ updateAmbTag(); // reassign shiny & sparkle side
+      rebuildSide('L'); rebuildSide('R'); }
+    toggleAmb.addEventListener('click', ()=>{ ambEye = (ambEye==='R'?'L':'R'); updateAmbAssets(); });
 
     // Animation
-    renderer.setAnimationLoop((time)=>{
-      const t=(time||0)/1000; bgMat.uniforms.uTime.value=t; leftMesh.rotation.y += 0.015; rightMesh.rotation.y -= 0.012;
+    renderer.setAnimationLoop((tMs)=>{
+      const t=(tMs||0)/1000; bgMat.uniforms.uTime.value=t; leftMesh.rotation.y += 0.015; rightMesh.rotation.y -= 0.012;
       let lPhase=Number(phaseL.value), rPhase=Number(phaseR.value); if(phaseLink.checked){ rPhase=(lPhase+Number(phaseOffset.value))%360; }
-      const mode=stimMode.value;
-      if(mode==='objects'){
-        applyTemporalToMesh(leftMesh,  modL.checked, modMode.value, t, lPhase);
-        applyTemporalToMesh(rightMesh, modR.checked, modMode.value, t, rPhase);
-      } else { // RDK
-        const now=time/1000; const dt = Math.min(0.05, renderer.xr.isPresenting ? renderer.xr.getSession()?.frameRate ? 1/(renderer.xr.getSession().frameRate) : 1/72 : 1/60); // rough dt cap
-        stepRDK(dt);
-        // simple blink hint uses global time, handled inside stepRDK
-      }
-      setPerEyeLayers(); renderer.render(scene, camera);
+      applyTemporal(leftMesh,  modL.checked, modMode.value, t, lPhase);
+      applyTemporal(rightMesh, modR.checked, modMode.value, t, rPhase);
+      applyPerEyeClarity();
+      setPerEyeLayers();
+      renderer.render(scene,camera);
     });
 
-    // Oculus VR button
-    (async()=>{ try{ const btn=VRButton.createButton(renderer); btn.style.position='fixed'; btn.style.right='12px'; btn.style.bottom='12px'; btn.style.zIndex='2000'; document.body.appendChild(btn); d('VRButton 준비 완료.'); } catch(e){ d('VRButton 생성 실패: '+(e?.message||e)); } })();
-    document.getElementById('enter').addEventListener('click', ()=>{ const btn=document.querySelector('button.webxr-button, .webxr-button, .vr-button, .xr-button'); if(btn) btn.click(); else alert('VRButton을 찾을 수 없습니다. HTTPS/localhost 접속과 기기 호환을 확인하세요.'); });
+    // WebXR Button
+    (async()=>{ try{ const btn=VRButton.createButton(renderer); btn.style.position='fixed'; btn.style.right='12px'; btn.style.bottom='12px'; btn.style.zIndex='2000'; document.body.appendChild(btn); d('VRButton 준비 완료'); } catch(e){ d('VRButton 생성 실패: '+(e?.message||e)); } })();
+    document.getElementById('enter').addEventListener('click', ()=>{ const btn=document.querySelector('button.webxr-button, .webxr-button, .vr-button, .xr-button'); btn?.click?.(); });
     document.getElementById('recenter').addEventListener('click', ()=>{ camera.position.set(0,1.4,1.5); camera.lookAt(0,1.4,-1.2); });
     window.addEventListener('resize', ()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 
-    // UI readouts
+    // UI text readouts
     modFreq.addEventListener('input', ()=>{ modFreqVal.textContent = `${Number(modFreq.value).toFixed(1)} Hz`; });
     modDuty.addEventListener('input', ()=>{ modDutyVal.textContent = `${modDuty.value}%`; });
     pulseStrength.addEventListener('input', ()=>{ pulseStrengthVal.textContent = `${Number(pulseStrength.value).toFixed(2)}×`; });
@@ -455,40 +384,26 @@
     phaseR.addEventListener('input', ()=>{ phaseRVal.textContent = `${phaseR.value}°`; });
     phaseLink.addEventListener('change', ()=>{ phaseOffset.disabled=!phaseLink.checked; phaseR.disabled=!!phaseLink.checked; });
 
-    // Presets
-    function applyPreset(id){ modL.checked=false; modR.checked=true; rightContrast.value='50'; applyRightContrast(); phaseLink.checked=true; phaseOffset.disabled=false; phaseR.disabled=true; switch(id){ case 1: modMode.value='blink'; modFreq.value='2'; modDuty.value='50'; phaseOffset.value='180'; break; case 2: modMode.value='blink'; modFreq.value='4'; modDuty.value='40'; phaseOffset.value='180'; break; case 3: modMode.value='pulse'; modFreq.value='3'; phaseOffset.value='180'; break; case 4: modMode.value='pulse'; modFreq.value='6'; phaseOffset.value='180'; break; case 5: modMode.value='blink'; modFreq.value='2'; modDuty.value='50'; phaseOffset.value='180'; break; case 6: modMode.value='blink'; modFreq.value='4'; modDuty.value='40'; phaseOffset.value='180'; break; case 7: modMode.value='pulse'; modFreq.value='3'; phaseOffset.value='180'; break; case 8: modMode.value='pulse'; modFreq.value='6'; phaseOffset.value='180'; break; case 9: modMode.value='pulse'; modFreq.value='10'; phaseOffset.value='90'; break; case 10: modMode.value='pulse'; modFreq.value='1'; phaseOffset.value='0'; break; } rightContrast.value='40'; applyRightContrast(); phaseL.value='0'; phaseR.value='0'; modFreq.dispatchEvent(new Event('input')); modDuty.dispatchEvent(new Event('input')); pulseStrength.dispatchEvent(new Event('input')); phaseOffset.dispatchEvent(new Event('input')); phaseL.dispatchEvent(new Event('input')); phaseR.dispatchEvent(new Event('input')); }
-
     // Self tests
-    function logStatus(msg,ok=true){ console[ok?'log':'error'](ok?'[TEST] '+msg:'[TEST FAIL] '+msg); const el=document.createElement('div'); el.textContent=(ok?'✅ ':'❌ ')+msg; el.style.color=ok?'#9fdf9f':'#ff9f9f'; testStatus.appendChild(el); }
+    function logStatus(msg, ok=true){ const el=document.createElement('div'); el.textContent=(ok?'✅ ':'❌ ')+msg; el.style.color=ok?'#9fdf9f':'#ff9f9f'; testStatus.appendChild(el); (ok?console.log:console.error)('[TEST]', msg); }
     async function runSelfTests(){ testStatus.textContent=''; try{
-      // RDK create & UI bounds
-      stimMode.value='rdk'; setStimMode('rdk'); updateRDKParamsFromUI(); createRDK();
-      rdkDots.value='100'; rdkDots.dispatchEvent(new Event('change')); rdkDots.value='1500'; rdkDots.dispatchEvent(new Event('change'));
-      rdkSpeed.value='0.10'; rdkSpeed.dispatchEvent(new Event('change')); rdkSpeed.value='3.00'; rdkSpeed.dispatchEvent(new Event('change'));
-      rdkSize.value='0.005'; rdkSize.dispatchEvent(new Event('change')); rdkSize.value='0.040'; rdkSize.dispatchEvent(new Event('change'));
-      rdkLife.value='0.10'; rdkLife.dispatchEvent(new Event('change')); rdkLife.value='1.00'; rdkLife.dispatchEvent(new Event('change'));
-      rdkDir.value='left'; rdkDir.dispatchEvent(new Event('change')); rdkDir.value='random'; rdkDir.dispatchEvent(new Event('change'));
-      rdkHint.value='color'; rdkHint.dispatchEvent(new Event('change')); rdkHint.value='size'; rdkHint.dispatchEvent(new Event('change')); rdkHint.value='blink'; rdkHint.dispatchEvent(new Event('change')); rdkHint.value='none'; rdkHint.dispatchEvent(new Event('change'));
-      rdkNoise.value='randdir'; rdkNoise.dispatchEvent(new Event('change')); rdkNoise.value='randwalk'; rdkNoise.dispatchEvent(new Event('change'));
-      logStatus('RDK 파라미터 경계/전환 OK');
-
-      // Amb eye toggle
-      toggleAmb.click(); toggleAmb.click(); logStatus('약시안 좌/우 전환 OK');
-
-      // Back to objects
-      stimMode.value='objects'; setStimMode('objects');
-      logStatus('모드 전환(objects↔rdk) OK');
-
-      // Presets iterate
-      for(let i=1;i<=10;i++) applyPreset(i);
-      logStatus('프리셋 1~10 적용 OK');
-
+      if(!(window && THREE)) throw new Error('THREE 모듈 미로드');
+      if(!VRButton) throw new Error('VRButton 미로드 실패');
+      if(!RoomEnvironment) throw new Error('RoomEnvironment 미로드 실패');
+      logStatus('모듈 로드(THREE/VRButton/RoomEnvironment) OK');
+      setBoth('grid', '#888'); setBoth('floor', '#555'); setBoth('none'); setBoth('grid', '#888'); logStatus('setBoth 전이( grid → floor → none → grid ) OK');
+      bothColor.value = '#ff0000'; bothColor.dispatchEvent(new Event('input')); logStatus('bothColor 핸들러 OK');
+      ['cube','sphere','ring','helix'].forEach(s=>{ leftShape.value=s; leftShape.dispatchEvent(new Event('change')); rightShape.value=s; rightShape.dispatchEvent(new Event('change')); }); logStatus('좌/우 shape 연속 변경 & dispose 안전성 OK');
+      phaseLink.checked=true; phaseLink.dispatchEvent(new Event('change')); phaseOffset.value='180'; phaseOffset.dispatchEvent(new Event('input')); phaseLink.checked=false; phaseLink.dispatchEvent(new Event('change')); phaseL.value='45'; phaseL.dispatchEvent(new Event('input')); phaseR.value='120'; phaseR.dispatchEvent(new Event('input')); logStatus('위상 연동/개별 모드 예외 없음');
+      shinyAmb.checked=true; shinyAmb.dispatchEvent(new Event('change')); shinyMetal.value='1.0'; shinyMetal.dispatchEvent(new Event('input')); shinyRough.value='0.05'; shinyRough.dispatchEvent(new Event('input')); shinyEnv.value='3.0'; shinyEnv.dispatchEvent(new Event('input')); logStatus('샤이니 파라미터 적용 OK');
+      renderScale.value='1.8'; renderScale.dispatchEvent(new Event('input')); logStatus('렌더 스케일 조정 OK');
       logStatus('모든 내장 테스트 통과');
-    }catch(e){ logStatus('에러: '+(e?.message||e), false); } }
+    }catch(e){ logStatus('테스트 예외: '+(e?.message||e), false); }
+    }
     document.getElementById('runTests').addEventListener('click', runSelfTests);
 
-    // init
-    function init(){ setStimMode('objects'); camera.lookAt(0,1.4,-1.2); d('초기화: 약시안=오른쪽, Objects/RDK 전환, RDK 파라미터 조절 및 약한 힌트/노이즈 지원.'); }
+    // Initialize
+    function init(){ camera.lookAt(0,1.4,-1.2); buildSparkleFor(rightMesh, rightColor.value); d('초기화: R=약시안, 샤이니/스파클/렌더스케일 포함.'); }
     init();
   </script>
 </body>
